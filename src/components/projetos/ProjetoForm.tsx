@@ -97,7 +97,7 @@ export function ProjetoForm({
   onCancel?: () => void;
 }) {
   const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ProjetoFormValues, string>>>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -170,7 +170,7 @@ export function ProjetoForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const next: Record<string, string> = {};
+    const next: Partial<Record<keyof ProjetoFormValues, string>> = {};
     if (!values.numero_projeto.trim()) next.numero_projeto = "Informe o número do projeto.";
     if (!values.empresa_id) next.empresa_id = "Selecione a empresa.";
     if (!values.localidade_id) next.localidade_id = "Selecione a localidade.";

@@ -19,9 +19,9 @@ export function FormCard({
   footer,
 }: {
   title: string;
-  description?: string;
+  description?: string | undefined;
   children: ReactNode;
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
 }) {
   return (
     <section className="rounded-lg border border-border bg-card shadow-card">
@@ -50,11 +50,11 @@ export function Field({
   className,
 }: {
   label: string;
-  required?: boolean;
-  error?: string;
-  hint?: string;
+  required?: boolean | undefined;
+  error?: string | undefined;
+  hint?: string | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("min-w-0", className)}>
@@ -80,13 +80,17 @@ export function SelectField({
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
-  placeholder?: string;
-  allowEmpty?: boolean;
-  emptyLabel?: string;
-  disabled?: boolean;
+  placeholder?: string | undefined;
+  allowEmpty?: boolean | undefined;
+  emptyLabel?: string | undefined;
+  disabled?: boolean | undefined;
 }) {
   return (
-    <Select value={value || NONE} onValueChange={onChange} disabled={disabled}>
+    <Select
+      value={value || NONE}
+      onValueChange={onChange}
+      {...(disabled === undefined ? {} : { disabled })}
+    >
       <SelectTrigger className="h-9 w-full bg-surface">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
