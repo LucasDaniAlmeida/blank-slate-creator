@@ -23,7 +23,7 @@ type Group = { label?: string; items: Item[] };
 
 const GROUPS: Group[] = [
   {
-    items: [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "projetos.ver" }],
+    items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard, capability: "projetos.ver" }],
   },
   {
     label: "Operação",
@@ -58,7 +58,7 @@ export function AppSidebar({
   const { usuario, role, can, signOut } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
+  const isActive = (to: string) => (to === "/" ? pathname === "/" : pathname.startsWith(to));
 
   return (
     <aside

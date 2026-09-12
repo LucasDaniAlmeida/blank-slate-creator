@@ -26,9 +26,9 @@ export function StatusBadge({
   tone,
   className,
 }: {
-  label?: string | null | undefined;
-  tone?: Tone | undefined;
-  className?: string | undefined;
+  label?: string | null;
+  tone?: Tone;
+  className?: string;
 }) {
   if (!label) return <span className="text-muted-foreground">—</span>;
   return (

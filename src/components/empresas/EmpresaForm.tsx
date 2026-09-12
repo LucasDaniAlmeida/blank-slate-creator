@@ -49,7 +49,7 @@ export function EmpresaForm({
   onCancel?: () => void;
 }) {
   const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState<Partial<Record<keyof EmpresaFormValues, string>>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -103,7 +103,7 @@ export function EmpresaForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const next: Partial<Record<keyof EmpresaFormValues, string>> = {};
+    const next: Record<string, string> = {};
     if (onlyDigits(values.cnpj).length !== 14) next.cnpj = "Informe um CNPJ válido (14 dígitos).";
     if (!values.nome_comercial.trim()) next.nome_comercial = "Informe o nome comercial.";
     const invalido = values.emails
@@ -278,22 +278,19 @@ export function EmpresaForm({
   );
 }
 
-export function empresaToForm(row: Record<string, unknown>): EmpresaFormValues {
-  const text = (value: unknown) => (typeof value === "string" ? value : "");
-  const contatos = row["contatos"];
-  const emails = row["emails"];
+export function empresaToForm(row: Record<string, any>): EmpresaFormValues {
   return {
-    cnpj: text(row["cnpj"]),
-    nome_comercial: text(row["nome_comercial"]),
-    nome_fantasia: text(row["nome_fantasia"]),
-    numero_sigum: text(row["numero_sigum"]),
-    codigo_contrato: text(row["codigo_contrato"]),
-    uc: text(row["uc"]),
-    emails: Array.isArray(emails) ? emails.filter((email): email is string => typeof email === "string").join(", ") : "",
-    responsavel: text(row["responsavel"]),
-    endereco_correspondencia: text(row["endereco_correspondencia"]),
-    contatos: Array.isArray(contatos)
-      ? (contatos as Contato[]).map((c) => ({
+    cnpj: row.cnpj ?? "",
+    nome_comercial: row.nome_comercial ?? "",
+    nome_fantasia: row.nome_fantasia ?? "",
+    numero_sigum: row.numero_sigum ?? "",
+    codigo_contrato: row.codigo_contrato ?? "",
+    uc: row.uc ?? "",
+    emails: Array.isArray(row.emails) ? row.emails.join(", ") : "",
+    responsavel: row.responsavel ?? "",
+    endereco_correspondencia: row.endereco_correspondencia ?? "",
+    contatos: Array.isArray(row.contatos)
+      ? (row.contatos as Contato[]).map((c) => ({
           nome: c?.nome ?? "",
           telefone: c?.telefone ?? "",
           email: c?.email ?? "",

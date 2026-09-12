@@ -85,7 +85,7 @@ export function NotificacaoForm({
   onCancel?: () => void;
 }) {
   const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState<Partial<Record<keyof NotificacaoFormValues, string>>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -135,7 +135,7 @@ export function NotificacaoForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const next: Partial<Record<keyof NotificacaoFormValues, string>> = {};
+    const next: Record<string, string> = {};
     if (!values.empresa_notificada_id) next.empresa_notificada_id = "Selecione a empresa notificada.";
     if (Number(values.quantidade_pontos) < 0) next.quantidade_pontos = "Quantidade inválida.";
     setErrors(next);
@@ -266,15 +266,15 @@ export function notificacaoToForm(row: Record<string, unknown>): NotificacaoForm
   const date = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
   const text = (v: unknown) => (typeof v === "string" ? v : "");
   return {
-    projeto_id: text(row["projeto_id"]),
-    empresa_notificada_id: text(row["empresa_notificada_id"]),
-    protocolo_faturamento: text(row["protocolo_faturamento"]),
-    data_verificacao_revelia: date(row["data_verificacao_revelia"]),
-    data_retirada_adequacao_pe: date(row["data_retirada_adequacao_pe"]),
-    qtde_dias_ocupacao: row["qtde_dias_ocupacao"] == null ? "" : String(row["qtde_dias_ocupacao"]),
-    data_abertura_protocolo_faturamento: date(row["data_abertura_protocolo_faturamento"]),
-    quantidade_pontos: String(row["quantidade_pontos"] ?? 0),
-    valor_arrecadado: String(row["valor_arrecadado"] ?? 0),
-    observacao: text(row["observacao"]),
+    projeto_id: text(row.projeto_id),
+    empresa_notificada_id: text(row.empresa_notificada_id),
+    protocolo_faturamento: text(row.protocolo_faturamento),
+    data_verificacao_revelia: date(row.data_verificacao_revelia),
+    data_retirada_adequacao_pe: date(row.data_retirada_adequacao_pe),
+    qtde_dias_ocupacao: row.qtde_dias_ocupacao == null ? "" : String(row.qtde_dias_ocupacao),
+    data_abertura_protocolo_faturamento: date(row.data_abertura_protocolo_faturamento),
+    quantidade_pontos: String(row.quantidade_pontos ?? 0),
+    valor_arrecadado: String(row.valor_arrecadado ?? 0),
+    observacao: text(row.observacao),
   };
 }

@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/format";
-import { prazoInfo } from "@/lib/prazo";
 
 export const Route = createFileRoute("/_authenticated/projetos/$id")({
   head: () => ({
@@ -32,8 +31,6 @@ export const Route = createFileRoute("/_authenticated/projetos/$id")({
       { name: "description", content: "Informações completas do projeto, cobrança e fiscalização." },
       { property: "og:title", content: "Detalhe do projeto — Gestão de Projetos" },
       { property: "og:description", content: "Informações completas do projeto." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -68,7 +65,7 @@ function ProjetoDetalhe() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["projetos"] });
       toast.success("Projeto excluído.");
-      await navigate({ to: "/projetos", search: { busca: undefined } });
+      await navigate({ to: "/projetos" });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -83,17 +80,17 @@ function ProjetoDetalhe() {
       </div>
     );
 
-  const p = projeto.data;
+  const p = projeto.data as Record<string, any>;
 
   return (
     <>
       <PageHeader
-        title={`Projeto ${String(p["numero_projeto"] ?? "")}`}
-        description={`Cadastrado em ${formatDateTime(p["created_at"] as string | null)} · última atualização ${formatDateTime(p["updated_at"] as string | null)}`}
+        title={`Projeto ${p.numero_projeto}`}
+        description={`Cadastrado em ${formatDateTime(p.created_at)} · última atualização ${formatDateTime(p.updated_at)}`}
         actions={
           <>
             <Button asChild variant="outline" size="sm">
-              <Link to="/projetos" search={{ busca: undefined }}>
+              <Link to="/projetos">
                 <ArrowLeft className="size-4" />
                 Voltar
               </Link>
@@ -123,71 +120,48 @@ function ProjetoDetalhe() {
               <h2 className="text-sm font-semibold">Informações do projeto</h2>
             </header>
             <DetailGrid>
-              <DetailItem label="Empresa">
-                {(p["empresas"] as { nome_comercial?: string } | null)?.nome_comercial ?? "—"}
-              </DetailItem>
+              <DetailItem label="Empresa">{p.empresas?.nome_comercial ?? "—"}</DetailItem>
               <DetailItem label="Localidade">
-                {p["localidades"]
-                  ? `${(p["localidades"] as { cidade?: string }).cidade}/${(p["localidades"] as { estado?: string }).estado}`
-                  : "—"}
+                {p.localidades ? `${p.localidades.cidade}/${p.localidades.estado}` : "—"}
               </DetailItem>
               <DetailItem label="Polo / Regional">
-                {[
-                  (p["localidades"] as { polo?: string } | null)?.polo,
-                  (p["localidades"] as { regional?: string } | null)?.regional,
-                ].filter(Boolean).join(" · ") || "—"}
+                {[p.localidades?.polo, p.localidades?.regional].filter(Boolean).join(" · ") || "—"}
               </DetailItem>
-              <DetailItem label="Contrato SIGUM">{String(p["numero_contrato_sigum"] ?? "—")}</DetailItem>
-              <DetailItem label="Analista">
-                {(p["usuarios"] as { nome?: string } | null)?.nome ?? "—"}
-              </DetailItem>
-              <DetailItem label="Data de abertura">{formatDate(p["data_abertura"] as string | null)}</DetailItem>
-              <DetailItem label="Data de resposta">{formatDate(p["data_resposta"] as string | null)}</DetailItem>
-              <DetailItem label="Quantidade de postes">{formatNumber(Number(p["quantidade_postes"] ?? 0))}</DetailItem>
+              <DetailItem label="Contrato SIGUM">{p.numero_contrato_sigum ?? "—"}</DetailItem>
+              <DetailItem label="Solicitante">{p.solicitante ?? "—"}</DetailItem>
+              <DetailItem label="Analista">{p.usuarios?.nome ?? "—"}</DetailItem>
+              <DetailItem label="Data de abertura">{formatDate(p.data_abertura)}</DetailItem>
+              <DetailItem label="Data de resposta">{formatDate(p.data_resposta)}</DetailItem>
+              <DetailItem label="Quantidade de postes">{formatNumber(p.quantidade_postes)}</DetailItem>
             </DetailGrid>
           </section>
 
           <section className="rounded-lg border border-border bg-card shadow-card">
             <header className="border-b border-border px-4 py-3">
-              <h2 className="text-sm font-semibold">Cobrança e atualização no SIGUM</h2>
+              <h2 className="text-sm font-semibold">Cobrança e fiscalização</h2>
             </header>
             <DetailGrid>
               <DetailItem label="Status da cobrança">
-                <StatusBadge label={(p["status_cobranca"] as { nome?: string } | null)?.nome ?? null} />
+                <StatusBadge label={p.status_cobranca?.nome} />
               </DetailItem>
-              <DetailItem label="Início da cobrança">{formatDate(p["data_inicio_cobranca"] as string | null)}</DetailItem>
-              <DetailItem label="Prazo SIGUM">
-                {(() => {
-                  const prazo = prazoInfo(
-                    p["dias_para_vencimento"] as number | null,
-                    (p["status_cobranca"] as { nome?: string } | null)?.nome,
-                  );
-                  return prazo ? (
-                    <StatusBadge
-                      label={prazo.label}
-                      tone={prazo.tone}
-                      {...(prazo.strong ? { className: "font-semibold" } : {})}
-                    />
-                  ) : (
-                    "—"
-                  );
-                })()}
+              <DetailItem label="Início da cobrança">{formatDate(p.data_inicio_cobranca)}</DetailItem>
+              <DetailItem label="Número do chamado">{p.numero_chamado ?? "—"}</DetailItem>
+              <DetailItem label="Status da fiscalização">
+                <StatusBadge label={p.status_fiscalizacao?.nome} />
               </DetailItem>
-              <DetailItem label="Número do chamado">{String(p["numero_chamado"] ?? "—")}</DetailItem>
-              <DetailItem label="Atualização SIGUM">{formatDate(p["data_atualizacao_sigum"] as string | null)}</DetailItem>
-              <DetailItem label="Projeto cadastrado no sistema de origem">
-                {typeof p["projeto_cadastrado"] === "string"
-                  ? p["projeto_cadastrado"] || "—"
-                  : p["projeto_cadastrado"]
-                    ? "Sim"
-                    : "—"}
+              <DetailItem label="Data da fiscalização">{formatDate(p.data_fiscalizacao)}</DetailItem>
+              <DetailItem label="Atualização SIGUM">{formatDate(p.data_atualizacao_sigum)}</DetailItem>
+              <DetailItem label="Projeto cadastrado">
+                <StatusBadge
+                  label={p.projeto_cadastrado ? "Sim" : "Não"}
+                  tone={p.projeto_cadastrado ? "success" : "neutral"}
+                />
               </DetailItem>
               <DetailItem label="Observações">
-                <span className="whitespace-pre-wrap">{String(p["observacoes"] ?? "—")}</span>
+                <span className="whitespace-pre-wrap">{p.observacoes ?? "—"}</span>
               </DetailItem>
             </DetailGrid>
           </section>
-
         </>
       )}
 
