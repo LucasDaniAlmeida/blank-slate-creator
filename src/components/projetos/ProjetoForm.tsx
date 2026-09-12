@@ -97,7 +97,7 @@ export function ProjetoForm({
   onCancel?: () => void;
 }) {
   const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ProjetoFormValues, string>>>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -170,7 +170,7 @@ export function ProjetoForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const next: Record<string, string> = {};
+    const next: Partial<Record<keyof ProjetoFormValues, string>> = {};
     if (!values.numero_projeto.trim()) next.numero_projeto = "Informe o número do projeto.";
     if (!values.empresa_id) next.empresa_id = "Selecione a empresa.";
     if (!values.localidade_id) next.localidade_id = "Selecione a localidade.";
@@ -323,7 +323,11 @@ export function ProjetoForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => (onCancel ? onCancel() : void navigate({ to: "/projetos", search: {} }))}
+          onClick={() =>
+            onCancel
+              ? onCancel()
+              : void navigate({ to: "/projetos", search: { busca: undefined } })
+          }
           disabled={mutation.isPending}
         >
           Cancelar
@@ -346,19 +350,19 @@ export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
     return "";
   };
   return {
-    numero_projeto: text(row.numero_projeto),
-    empresa_id: text(row.empresa_id),
-    localidade_id: text(row.localidade_id),
-    numero_contrato_sigum: text(row.numero_contrato_sigum),
-    data_abertura: date(row.data_abertura),
-    data_resposta: date(row.data_resposta),
-    analista_id: text(row.analista_id),
-    quantidade_postes: String(row.quantidade_postes ?? 0),
-    data_inicio_cobranca: date(row.data_inicio_cobranca),
-    status_cobranca_id: text(row.status_cobranca_id),
-    numero_chamado: text(row.numero_chamado),
-    data_atualizacao_sigum: date(row.data_atualizacao_sigum),
-    observacoes: text(row.observacoes),
-    projeto_cadastrado: cadastrado(row.projeto_cadastrado),
+    numero_projeto: text(row["numero_projeto"]),
+    empresa_id: text(row["empresa_id"]),
+    localidade_id: text(row["localidade_id"]),
+    numero_contrato_sigum: text(row["numero_contrato_sigum"]),
+    data_abertura: date(row["data_abertura"]),
+    data_resposta: date(row["data_resposta"]),
+    analista_id: text(row["analista_id"]),
+    quantidade_postes: String(row["quantidade_postes"] ?? 0),
+    data_inicio_cobranca: date(row["data_inicio_cobranca"]),
+    status_cobranca_id: text(row["status_cobranca_id"]),
+    numero_chamado: text(row["numero_chamado"]),
+    data_atualizacao_sigum: date(row["data_atualizacao_sigum"]),
+    observacoes: text(row["observacoes"]),
+    projeto_cadastrado: cadastrado(row["projeto_cadastrado"]),
   };
 }

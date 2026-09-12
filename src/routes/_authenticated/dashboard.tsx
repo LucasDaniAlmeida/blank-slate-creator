@@ -383,7 +383,7 @@ function Dashboard() {
                 action={
                   <Link
                     to="/projetos"
-                    search={{}}
+                    search={{ busca: undefined }}
                     className="text-xs font-medium text-primary hover:underline"
                   >
                     Ver todos

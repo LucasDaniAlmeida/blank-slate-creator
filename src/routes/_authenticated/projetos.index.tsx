@@ -27,7 +27,7 @@ const PAGE_SIZE = 15;
 
 export const Route = createFileRoute("/_authenticated/projetos/")({
   validateSearch: (search: Record<string, unknown>) => ({
-    busca: typeof search.busca === "string" ? search.busca : undefined,
+    busca: typeof search["busca"] === "string" ? search["busca"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -265,7 +265,7 @@ function ProjetosPage() {
           setLocalidade(ALL);
           setCobranca(ALL);
           setPage(0);
-          void navigate({ to: "/projetos", search: {} });
+          void navigate({ to: "/projetos", search: { busca: undefined } });
         }}
       >
         <SearchField
