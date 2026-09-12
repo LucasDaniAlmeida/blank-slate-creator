@@ -26,7 +26,6 @@ export type ProjetoFormValues = {
   empresa_id: string;
   localidade_id: string;
   numero_contrato_sigum: string;
-  solicitante: string;
   data_abertura: string;
   data_resposta: string;
   analista_id: string;
@@ -35,8 +34,6 @@ export type ProjetoFormValues = {
   status_cobranca_id: string;
   numero_chamado: string;
   data_atualizacao_sigum: string;
-  data_fiscalizacao: string;
-  status_fiscalizacao_id: string;
   observacoes: string;
   projeto_cadastrado: string;
 };
@@ -46,7 +43,6 @@ export const emptyProjeto: ProjetoFormValues = {
   empresa_id: "",
   localidade_id: "",
   numero_contrato_sigum: "",
-  solicitante: "",
   data_abertura: "",
   data_resposta: "",
   analista_id: "",
@@ -55,8 +51,6 @@ export const emptyProjeto: ProjetoFormValues = {
   status_cobranca_id: "",
   numero_chamado: "",
   data_atualizacao_sigum: "",
-  data_fiscalizacao: "",
-  status_fiscalizacao_id: "",
   observacoes: "",
   projeto_cadastrado: "",
 };
@@ -74,7 +68,6 @@ function toDb(values: ProjetoFormValues, statusInicialId: string | null, criando
     empresa_id: values.empresa_id,
     localidade_id: values.localidade_id,
     numero_contrato_sigum: nullable(values.numero_contrato_sigum),
-    solicitante: nullable(values.solicitante),
     data_abertura: timestamp(values.data_abertura),
     data_resposta: timestamp(values.data_resposta),
     analista_id: values.analista_id || null,
@@ -84,8 +77,6 @@ function toDb(values: ProjetoFormValues, statusInicialId: string | null, criando
     data_atualizacao_sigum: values.numero_contrato_sigum.trim()
       ? timestamp(values.data_atualizacao_sigum)
       : null,
-    data_fiscalizacao: nullable(values.data_fiscalizacao),
-    status_fiscalizacao_id: values.status_fiscalizacao_id || null,
     observacoes: nullable(values.observacoes),
     projeto_cadastrado: nullable(values.projeto_cadastrado),
   };
@@ -145,17 +136,17 @@ export function ProjetoForm({
       } as unknown as typeof payload;
 
       if (projetoId) {
-        let res = await supabase.from("projetos").update(payload).eq("id", projetoId);
+        let res = await supabase.from("projetos").update(payload as never).eq("id", projetoId);
         if (res.error && isTipoInvalido(res.error.message)) {
-          res = await supabase.from("projetos").update(legado).eq("id", projetoId);
+          res = await supabase.from("projetos").update(legado as never).eq("id", projetoId);
         }
         if (res.error) throw new Error(res.error.message);
         return projetoId;
       }
 
-      let res = await supabase.from("projetos").insert(payload).select("id").single();
+      let res = await supabase.from("projetos").insert(payload as never).select("id").single();
       if (res.error && isTipoInvalido(res.error.message)) {
-        res = await supabase.from("projetos").insert(legado).select("id").single();
+        res = await supabase.from("projetos").insert(legado as never).select("id").single();
       }
       if (res.error) throw new Error(res.error.message);
       return (res.data as { id: string }).id;
@@ -359,7 +350,6 @@ export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
     empresa_id: text(row.empresa_id),
     localidade_id: text(row.localidade_id),
     numero_contrato_sigum: text(row.numero_contrato_sigum),
-    solicitante: text(row.solicitante),
     data_abertura: date(row.data_abertura),
     data_resposta: date(row.data_resposta),
     analista_id: text(row.analista_id),
@@ -368,8 +358,6 @@ export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
     status_cobranca_id: text(row.status_cobranca_id),
     numero_chamado: text(row.numero_chamado),
     data_atualizacao_sigum: date(row.data_atualizacao_sigum),
-    data_fiscalizacao: date(row.data_fiscalizacao),
-    status_fiscalizacao_id: text(row.status_fiscalizacao_id),
     observacoes: text(row.observacoes),
     projeto_cadastrado: cadastrado(row.projeto_cadastrado),
   };

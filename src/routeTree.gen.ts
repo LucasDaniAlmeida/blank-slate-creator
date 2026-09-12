@@ -9,9 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedLocalidadesRouteImport } from './routes/_authenticated/localidades'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedEmpresasIndexRouteImport } from './routes/_authenticated/empresas.index'
@@ -24,6 +25,11 @@ import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProjetosIdRouteImport } from './routes/_authenticated/projetos.$id'
 import { Route as AuthenticatedProjetosNovoRouteImport } from './routes/_authenticated/projetos.novo'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -33,9 +39,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLocalidadesRoute =
@@ -103,8 +109,9 @@ const AuthenticatedProjetosNovoRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/localidades': typeof AuthenticatedLocalidadesRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/empresas/$id': typeof AuthenticatedEmpresasIdRoute
@@ -118,10 +125,11 @@ export interface FileRoutesByFullPath {
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/localidades': typeof AuthenticatedLocalidadesRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
-  '/': typeof AuthenticatedIndexRoute
   '/empresas/$id': typeof AuthenticatedEmpresasIdRoute
   '/empresas/novo': typeof AuthenticatedEmpresasNovoRoute
   '/notificacoes/$id': typeof AuthenticatedNotificacoesIdRoute
@@ -134,11 +142,12 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/localidades': typeof AuthenticatedLocalidadesRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/empresas/$id': typeof AuthenticatedEmpresasIdRoute
   '/_authenticated/empresas/novo': typeof AuthenticatedEmpresasNovoRoute
   '/_authenticated/notificacoes/$id': typeof AuthenticatedNotificacoesIdRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/dashboard'
     | '/localidades'
     | '/usuarios'
     | '/empresas/$id'
@@ -167,10 +177,11 @@ export interface FileRouteTypes {
     | '/projetos/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
+    | '/dashboard'
     | '/localidades'
     | '/usuarios'
-    | '/'
     | '/empresas/$id'
     | '/empresas/novo'
     | '/notificacoes/$id'
@@ -182,11 +193,12 @@ export interface FileRouteTypes {
     | '/projetos'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/dashboard'
     | '/_authenticated/localidades'
     | '/_authenticated/usuarios'
-    | '/_authenticated/'
     | '/_authenticated/empresas/$id'
     | '/_authenticated/empresas/novo'
     | '/_authenticated/notificacoes/$id'
@@ -199,12 +211,20 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -219,11 +239,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/localidades': {
@@ -307,9 +327,9 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLocalidadesRoute: typeof AuthenticatedLocalidadesRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedEmpresasIdRoute: typeof AuthenticatedEmpresasIdRoute
   AuthenticatedEmpresasNovoRoute: typeof AuthenticatedEmpresasNovoRoute
   AuthenticatedNotificacoesIdRoute: typeof AuthenticatedNotificacoesIdRoute
@@ -322,9 +342,9 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLocalidadesRoute: AuthenticatedLocalidadesRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedEmpresasIdRoute: AuthenticatedEmpresasIdRoute,
   AuthenticatedEmpresasNovoRoute: AuthenticatedEmpresasNovoRoute,
   AuthenticatedNotificacoesIdRoute: AuthenticatedNotificacoesIdRoute,
@@ -340,6 +360,7 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
 }

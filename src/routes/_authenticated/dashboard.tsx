@@ -35,7 +35,7 @@ import {
   situacaoTone,
 } from "@/lib/situacao";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Gestão de Projetos, Cobrança e Fiscalização" },
@@ -46,6 +46,8 @@ export const Route = createFileRoute("/_authenticated/")({
       },
       { property: "og:title", content: "Dashboard — Gestão de Projetos" },
       { property: "og:description", content: "Visão geral da operação de cobrança e fiscalização." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -379,7 +381,11 @@ function Dashboard() {
               <Panel
                 title="Últimos projetos"
                 action={
-                  <Link to="/projetos" className="text-xs font-medium text-primary hover:underline">
+                  <Link
+                    to="/projetos"
+                    search={{}}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
                     Ver todos
                   </Link>
                 }
