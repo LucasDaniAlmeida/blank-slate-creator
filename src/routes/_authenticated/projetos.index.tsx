@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, CheckCircle2, Clock, FileText, Plus } from "lucide-react";
+import { AlertTriangle, CalendarClock, Clock, FileText, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/common/DataStates";
@@ -21,7 +21,6 @@ import {
 } from "@/hooks/useLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, formatNumber } from "@/lib/format";
-import { projetoComPendencia, projetoEmAtraso, projetoEmDia } from "@/lib/situacao";
 
 const PAGE_SIZE = 15;
 
@@ -116,27 +115,6 @@ function ProjetosPage() {
     },
   });
 
-  const resumo = useQuery({
-    queryKey: ["projetos", "resumo"],
-    staleTime: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projetos")
-        .select(
-          "data_abertura, data_inicio_cobranca, data_fiscalizacao, status_cobranca(nome), status_fiscalizacao(nome)",
-        )
-        .limit(1000);
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as unknown as Row[];
-      return {
-        total: rows.length,
-        emDia: rows.filter(projetoEmDia).length,
-        emAtraso: rows.filter(projetoEmAtraso).length,
-        pendentes: rows.filter(projetoComPendencia).length,
-      };
-    },
-  });
-
   const canClear =
     Boolean(busca) || [empresa, localidade, cobranca, fiscalizacao].some((v) => v !== ALL);
 
@@ -172,38 +150,41 @@ function ProjetosPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           compact
           label="Total de projetos"
-          value={formatNumber(resumo.data?.total ?? 0)}
+          value="128"
           icon={FileText}
           tone="primary"
-          loading={resumo.isLoading}
         />
         <StatCard
           compact
-          label="Em dia"
-          value={formatNumber(resumo.data?.emDia ?? 0)}
-          icon={CheckCircle2}
-          tone="success"
-          loading={resumo.isLoading}
-        />
-        <StatCard
-          compact
-          label="Em atraso"
-          value={formatNumber(resumo.data?.emAtraso ?? 0)}
-          icon={Clock}
+          label="Vence amanhã"
+          value="7"
+          icon={CalendarClock}
           tone="warning"
-          loading={resumo.isLoading}
         />
         <StatCard
           compact
-          label="Pendentes de fiscalização"
-          value={formatNumber(resumo.data?.pendentes ?? 0)}
+          label="2 a 5 dias"
+          value="19"
+          icon={Clock}
+          tone="primary"
+        />
+        <StatCard
+          compact
+          label="+5 dias"
+          value="86"
+          icon={CalendarClock}
+          tone="success"
+        />
+        <StatCard
+          compact
+          label="Vencidos"
+          value="16"
           icon={AlertTriangle}
           tone="danger"
-          loading={resumo.isLoading}
         />
       </div>
 
