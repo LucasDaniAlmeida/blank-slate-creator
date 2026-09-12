@@ -190,13 +190,15 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
-        <Field label="Solicitante">
-          <Input
-            value={values.solicitante}
-            onChange={(e) => set("solicitante", e.target.value)}
-            className="h-9"
-          />
-        </Field>
+        {projetoId ? (
+          <Field label="Solicitante">
+            <Input
+              value={values.solicitante}
+              onChange={(e) => set("solicitante", e.target.value)}
+              className="h-9"
+            />
+          </Field>
+        ) : null}
         <Field label="Analista responsável">
           <SelectField
             value={values.analista_id}
@@ -256,6 +258,11 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
+        {projetoId ? (
+          <Field label="Dias para o vencimento">
+            <Input value="4 dias" readOnly className="h-9" />
+          </Field>
+        ) : null}
       </FormCard>
 
       <FormCard title="Fiscalização e registro" description="Situação da fiscalização e observações.">
@@ -267,21 +274,25 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
-        <Field label="Data da fiscalização">
-          <Input
-            type="date"
-            value={values.data_fiscalizacao}
-            onChange={(e) => set("data_fiscalizacao", e.target.value)}
-            className="h-9"
-          />
-        </Field>
-        <Field label="Status da fiscalização">
-          <SelectField
-            value={values.status_fiscalizacao_id}
-            onChange={(v) => set("status_fiscalizacao_id", pick(v))}
-            options={(statusFiscalizacao.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
-          />
-        </Field>
+        {projetoId ? (
+          <>
+            <Field label="Data da fiscalização">
+              <Input
+                type="date"
+                value={values.data_fiscalizacao}
+                onChange={(e) => set("data_fiscalizacao", e.target.value)}
+                className="h-9"
+              />
+            </Field>
+            <Field label="Status da fiscalização">
+              <SelectField
+                value={values.status_fiscalizacao_id}
+                onChange={(v) => set("status_fiscalizacao_id", pick(v))}
+                options={(statusFiscalizacao.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
+              />
+            </Field>
+          </>
+        ) : null}
         <Field label="Observações" className="sm:col-span-2 lg:col-span-3">
           <Textarea
             value={values.observacoes}

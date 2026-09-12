@@ -1,1 +1,2 @@
-- [ ] Corrigir todos os erros de typecheck da prévia
+- [ ] Corrigir todos os erros de typecheck da prévia, inclusive os anteriores
+- [x] Ajustar os KPIs e campos de criação/edição de Projetos
