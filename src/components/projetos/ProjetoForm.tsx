@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Field, FormCard, NONE, SelectField } from "@/components/common/FormKit";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,10 +14,12 @@ import {
   useEmpresasOptions,
   useLocalidadesOptions,
   useStatusCobranca,
-  useStatusFiscalizacao,
   useUsuariosOptions,
 } from "@/hooks/useLookups";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDate } from "@/lib/format";
+
+export const STATUS_INICIAL_COBRANCA = "Pendente de atualização no SIGUM";
 
 export type ProjetoFormValues = {
   numero_projeto: string;
@@ -37,7 +38,7 @@ export type ProjetoFormValues = {
   data_fiscalizacao: string;
   status_fiscalizacao_id: string;
   observacoes: string;
-  projeto_cadastrado: boolean;
+  projeto_cadastrado: string;
 };
 
 export const emptyProjeto: ProjetoFormValues = {
@@ -57,10 +58,15 @@ export const emptyProjeto: ProjetoFormValues = {
   data_fiscalizacao: "",
   status_fiscalizacao_id: "",
   observacoes: "",
-  projeto_cadastrado: false,
+  projeto_cadastrado: "",
 };
 
-function toDb(values: ProjetoFormValues) {
+/**
+ * O "Início da cobrança" é calculado pelo banco a partir da data de resposta
+ * (5 dias úteis com contrato / 30 dias corridos sem contrato), por isso o campo
+ * nunca é enviado pelo formulário.
+ */
+function toDb(values: ProjetoFormValues, statusInicialId: string | null, criando: boolean) {
   const nullable = (v: string) => (v.trim() === "" ? null : v.trim());
   const timestamp = (v: string) => (v ? new Date(`${v}T12:00:00`).toISOString() : null);
   return {
@@ -73,15 +79,21 @@ function toDb(values: ProjetoFormValues) {
     data_resposta: timestamp(values.data_resposta),
     analista_id: values.analista_id || null,
     quantidade_postes: Number(values.quantidade_postes || 0),
-    data_inicio_cobranca: nullable(values.data_inicio_cobranca),
-    status_cobranca_id: values.status_cobranca_id || null,
+    ...(criando && statusInicialId ? { status_cobranca_id: statusInicialId } : {}),
     numero_chamado: nullable(values.numero_chamado),
-    data_atualizacao_sigum: timestamp(values.data_atualizacao_sigum),
+    data_atualizacao_sigum: values.numero_contrato_sigum.trim()
+      ? timestamp(values.data_atualizacao_sigum)
+      : null,
     data_fiscalizacao: nullable(values.data_fiscalizacao),
     status_fiscalizacao_id: values.status_fiscalizacao_id || null,
     observacoes: nullable(values.observacoes),
-    projeto_cadastrado: values.projeto_cadastrado,
+    projeto_cadastrado: nullable(values.projeto_cadastrado),
   };
+}
+
+/** Alguns bancos ainda têm `projeto_cadastrado` booleano — nesse caso enviamos o valor convertido. */
+function isTipoInvalido(message: string): boolean {
+  return /projeto_cadastrado|invalid input syntax for type boolean|22P02/i.test(message);
 }
 
 export function ProjetoForm({
@@ -102,22 +114,51 @@ export function ProjetoForm({
   const localidades = useLocalidadesOptions();
   const usuarios = useUsuariosOptions();
   const statusCobranca = useStatusCobranca();
-  const statusFiscalizacao = useStatusFiscalizacao();
+
+  const statusInicial = useMemo(
+    () =>
+      (statusCobranca.data ?? []).find((s) =>
+        s.nome.toLowerCase().includes("pendente de atualiza"),
+      ) ?? null,
+    [statusCobranca.data],
+  );
+
+  const statusAtualNome = useMemo(() => {
+    if (values.status_cobranca_id) {
+      const atual = (statusCobranca.data ?? []).find((s) => s.id === values.status_cobranca_id);
+      if (atual) return atual.nome;
+    }
+    return projetoId ? "—" : (statusInicial?.nome ?? STATUS_INICIAL_COBRANCA);
+  }, [statusCobranca.data, statusInicial, values.status_cobranca_id, projetoId]);
+
+  const contratoInformado = values.numero_contrato_sigum.trim().length > 0;
 
   const set = <K extends keyof ProjetoFormValues>(key: K, value: ProjetoFormValues[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload = toDb(values);
+      const payload = toDb(values, statusInicial?.id ?? null, !projetoId);
+      const legado = {
+        ...payload,
+        projeto_cadastrado: Boolean(values.projeto_cadastrado.trim()),
+      } as unknown as typeof payload;
+
       if (projetoId) {
-        const { error } = await supabase.from("projetos").update(payload).eq("id", projetoId);
-        if (error) throw new Error(error.message);
+        let res = await supabase.from("projetos").update(payload).eq("id", projetoId);
+        if (res.error && isTipoInvalido(res.error.message)) {
+          res = await supabase.from("projetos").update(legado).eq("id", projetoId);
+        }
+        if (res.error) throw new Error(res.error.message);
         return projetoId;
       }
-      const { data, error } = await supabase.from("projetos").insert(payload).select("id").single();
-      if (error) throw new Error(error.message);
-      return data.id as string;
+
+      let res = await supabase.from("projetos").insert(payload).select("id").single();
+      if (res.error && isTipoInvalido(res.error.message)) {
+        res = await supabase.from("projetos").insert(legado).select("id").single();
+      }
+      if (res.error) throw new Error(res.error.message);
+      return (res.data as { id: string }).id;
     },
     onSuccess: async (id) => {
       await queryClient.invalidateQueries({ queryKey: ["projetos"] });
@@ -190,13 +231,6 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
-        <Field label="Solicitante">
-          <Input
-            value={values.solicitante}
-            onChange={(e) => set("solicitante", e.target.value)}
-            className="h-9"
-          />
-        </Field>
         <Field label="Analista responsável">
           <SelectField
             value={values.analista_id}
@@ -208,7 +242,7 @@ export function ProjetoForm({
         </Field>
       </FormCard>
 
-      <FormCard title="Cobrança" description="Acompanhamento financeiro do projeto.">
+      <FormCard title="Cobrança" description="Prazo e status calculados automaticamente pelo banco.">
         <Field label="Data de abertura">
           <Input
             type="date"
@@ -217,7 +251,10 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
-        <Field label="Data de resposta">
+        <Field
+          label="Data de resposta"
+          hint="Define o início da cobrança calculado pelo banco."
+        >
           <Input
             type="date"
             value={values.data_resposta}
@@ -234,20 +271,23 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
-        <Field label="Início da cobrança">
+        <Field
+          label="Início da cobrança"
+          hint="5 dias úteis para empresas com contrato; 30 dias corridos sem contrato."
+        >
           <Input
-            type="date"
-            value={values.data_inicio_cobranca}
-            onChange={(e) => set("data_inicio_cobranca", e.target.value)}
+            readOnly
+            disabled
+            value={
+              values.data_inicio_cobranca
+                ? formatDate(values.data_inicio_cobranca)
+                : "Calculado após salvar"
+            }
             className="h-9"
           />
         </Field>
-        <Field label="Status da cobrança">
-          <SelectField
-            value={values.status_cobranca_id}
-            onChange={(v) => set("status_cobranca_id", pick(v))}
-            options={(statusCobranca.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
-          />
+        <Field label="Status da cobrança" hint="Somente leitura — atualizado pelo banco.">
+          <Input readOnly disabled value={statusAtualNome} className="h-9" />
         </Field>
         <Field label="Número do chamado">
           <Input
@@ -258,28 +298,25 @@ export function ProjetoForm({
         </Field>
       </FormCard>
 
-      <FormCard title="Fiscalização e registro" description="Situação da fiscalização e observações.">
-        <Field label="Atualização SIGUM">
+      <FormCard title="Atualização no SIGUM" description="Registro da atualização e observações.">
+        <Field
+          label="Atualização SIGUM"
+          hint={contratoInformado ? undefined : "Informe o número do contrato SIGUM para habilitar."}
+        >
           <Input
             type="date"
             value={values.data_atualizacao_sigum}
             onChange={(e) => set("data_atualizacao_sigum", e.target.value)}
+            disabled={!contratoInformado}
             className="h-9"
           />
         </Field>
-        <Field label="Data da fiscalização">
+        <Field label="Projeto cadastrado no sistema de origem">
           <Input
-            type="date"
-            value={values.data_fiscalizacao}
-            onChange={(e) => set("data_fiscalizacao", e.target.value)}
+            value={values.projeto_cadastrado}
+            onChange={(e) => set("projeto_cadastrado", e.target.value)}
+            placeholder="Informe o cadastro"
             className="h-9"
-          />
-        </Field>
-        <Field label="Status da fiscalização">
-          <SelectField
-            value={values.status_fiscalizacao_id}
-            onChange={(v) => set("status_fiscalizacao_id", pick(v))}
-            options={(statusFiscalizacao.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
           />
         </Field>
         <Field label="Observações" className="sm:col-span-2 lg:col-span-3">
@@ -289,23 +326,13 @@ export function ProjetoForm({
             rows={3}
           />
         </Field>
-        <div className="flex items-center gap-2 sm:col-span-2 lg:col-span-3">
-          <Checkbox
-            id="cadastrado"
-            checked={values.projeto_cadastrado}
-            onCheckedChange={(c) => set("projeto_cadastrado", c === true)}
-          />
-          <label htmlFor="cadastrado" className="text-sm">
-            Projeto cadastrado no sistema de origem
-          </label>
-        </div>
       </FormCard>
 
       <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
           variant="outline"
-          onClick={() => (onCancel ? onCancel() : void navigate({ to: "/projetos" }))}
+          onClick={() => (onCancel ? onCancel() : void navigate({ to: "/projetos", search: {} }))}
           disabled={mutation.isPending}
         >
           Cancelar
@@ -322,6 +349,11 @@ export function ProjetoForm({
 export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
   const date = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
   const text = (v: unknown) => (typeof v === "string" ? v : "");
+  const cadastrado = (v: unknown) => {
+    if (typeof v === "string") return v;
+    if (v === true) return "Sim";
+    return "";
+  };
   return {
     numero_projeto: text(row.numero_projeto),
     empresa_id: text(row.empresa_id),
@@ -339,6 +371,6 @@ export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
     data_fiscalizacao: date(row.data_fiscalizacao),
     status_fiscalizacao_id: text(row.status_fiscalizacao_id),
     observacoes: text(row.observacoes),
-    projeto_cadastrado: Boolean(row.projeto_cadastrado),
+    projeto_cadastrado: cadastrado(row.projeto_cadastrado),
   };
 }
