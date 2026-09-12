@@ -86,7 +86,7 @@ export function SelectField({
   disabled?: boolean;
 }) {
   return (
-    <Select value={value || NONE} onValueChange={onChange} disabled={disabled}>
+    <Select value={value || NONE} onValueChange={onChange} disabled={disabled ?? false}>
       <SelectTrigger className="h-9 w-full bg-surface">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
