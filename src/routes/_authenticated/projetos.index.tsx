@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, CheckCircle2, Clock, FileText, Plus } from "lucide-react";
+import { AlertTriangle, CalendarClock, FileText, Timer, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/common/DataStates";
@@ -17,11 +17,10 @@ import {
   useEmpresasOptions,
   useLocalidadesOptions,
   useStatusCobranca,
-  useStatusFiscalizacao,
 } from "@/hooks/useLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, formatNumber } from "@/lib/format";
-import { projetoComPendencia, projetoEmAtraso, projetoEmDia } from "@/lib/situacao";
+import { prazoInfo } from "@/lib/prazo";
 
 const PAGE_SIZE = 15;
 
@@ -31,13 +30,17 @@ export const Route = createFileRoute("/_authenticated/projetos/")({
   }),
   head: () => ({
     meta: [
-      { title: "Projetos — Gestão de Projetos, Cobrança e Fiscalização" },
+      { title: "Projetos — Acompanhamento de atualização no SIGUM" },
       {
         name: "description",
-        content: "Listagem e gerenciamento dos projetos cadastrados, com filtros e status.",
+        content:
+          "Listagem de projetos com acompanhamento do prazo de atualização no SIGUM e status de cobrança.",
       },
-      { property: "og:title", content: "Projetos — Gestão de Projetos" },
-      { property: "og:description", content: "Gerenciamento dos projetos cadastrados no sistema." },
+      { property: "og:title", content: "Projetos — Acompanhamento SIGUM" },
+      {
+        property: "og:description",
+        content: "Prazos de atualização no SIGUM e status de cobrança dos projetos.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -48,22 +51,31 @@ type Row = {
   id: string;
   numero_projeto: string;
   numero_contrato_sigum: string | null;
-  solicitante: string | null;
   data_abertura: string | null;
+  data_resposta: string | null;
   data_inicio_cobranca: string | null;
-  data_fiscalizacao: string | null;
+  data_atualizacao_sigum: string | null;
   quantidade_postes: number;
-  projeto_cadastrado: boolean;
   created_at: string;
+  dias_para_vencimento?: number | null;
   empresas: { nome_comercial: string } | null;
   localidades: { cidade: string; estado: string } | null;
   usuarios: { nome: string | null } | null;
   status_cobranca: { nome: string } | null;
-  status_fiscalizacao: { nome: string } | null;
 };
 
-const SELECT =
-  "id, numero_projeto, numero_contrato_sigum, solicitante, data_abertura, data_inicio_cobranca, data_fiscalizacao, quantidade_postes, projeto_cadastrado, created_at, empresas(nome_comercial), localidades(cidade, estado), usuarios(nome), status_cobranca(nome), status_fiscalizacao(nome)";
+/** Mantém a string de select fora da checagem de tipos (performance do tsc). */
+const sel = (s: string): string => s;
+
+const BASE_COLS =
+  "id, numero_projeto, numero_contrato_sigum, data_abertura, data_resposta, data_inicio_cobranca, data_atualizacao_sigum, quantidade_postes, created_at, empresas(nome_comercial), localidades(cidade, estado), usuarios(nome), status_cobranca(nome)";
+
+/** A coluna de prazo é calculada no banco; se ainda não existir, degradamos sem quebrar a tela. */
+const PRAZO_COL = "dias_para_vencimento";
+
+function isPrazoMissing(message: string): boolean {
+  return /dias_para_vencimento/i.test(message);
+}
 
 function ProjetosPage() {
   const { busca: buscaInicial } = Route.useSearch();
@@ -75,7 +87,6 @@ function ProjetosPage() {
   const [empresa, setEmpresa] = useState(ALL);
   const [localidade, setLocalidade] = useState(ALL);
   const [cobranca, setCobranca] = useState(ALL);
-  const [fiscalizacao, setFiscalizacao] = useState(ALL);
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState({ key: "created_at", asc: false });
 
@@ -90,55 +101,75 @@ function ProjetosPage() {
   const empresas = useEmpresasOptions();
   const localidades = useLocalidadesOptions();
   const statusCobranca = useStatusCobranca();
-  const statusFiscalizacao = useStatusFiscalizacao();
 
-  const filtros = { termo, empresa, localidade, cobranca, fiscalizacao };
+  const filtros = { termo, empresa, localidade, cobranca };
 
   const lista = useQuery({
     queryKey: ["projetos", filtros, page, sort],
     queryFn: async () => {
-      let query = supabase.from("projetos").select(SELECT, { count: "exact" });
-      if (termo) {
-        query = query.or(
-          `numero_projeto.ilike.%${termo}%,numero_contrato_sigum.ilike.%${termo}%,solicitante.ilike.%${termo}%,numero_chamado.ilike.%${termo}%`,
-        );
+      const run = async (comPrazo: boolean) => {
+        let query = supabase
+          .from("projetos")
+          .select(sel(comPrazo ? `${BASE_COLS}, ${PRAZO_COL}` : BASE_COLS), { count: "exact" });
+        if (termo) {
+          query = query.or(
+            `numero_projeto.ilike.%${termo}%,numero_contrato_sigum.ilike.%${termo}%,numero_chamado.ilike.%${termo}%`,
+          );
+        }
+        if (empresa !== ALL) query = query.eq("empresa_id", empresa);
+        if (localidade !== ALL) query = query.eq("localidade_id", localidade);
+        if (cobranca !== ALL) query = query.eq("status_cobranca_id", cobranca);
+        return query
+          .order(sort.key, { ascending: sort.asc })
+          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      };
+
+      let res = await run(true);
+      let prazoDisponivel = true;
+      if (res.error && isPrazoMissing(res.error.message)) {
+        prazoDisponivel = false;
+        res = await run(false);
       }
-      if (empresa !== ALL) query = query.eq("empresa_id", empresa);
-      if (localidade !== ALL) query = query.eq("localidade_id", localidade);
-      if (cobranca !== ALL) query = query.eq("status_cobranca_id", cobranca);
-      if (fiscalizacao !== ALL) query = query.eq("status_fiscalizacao_id", fiscalizacao);
-
-      const { data, error, count } = await query
-        .order(sort.key, { ascending: sort.asc })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-      if (error) throw new Error(error.message);
-      return { rows: (data ?? []) as unknown as Row[], total: count ?? 0 };
-    },
-  });
-
-  const resumo = useQuery({
-    queryKey: ["projetos", "resumo"],
-    staleTime: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projetos")
-        .select(
-          "data_abertura, data_inicio_cobranca, data_fiscalizacao, status_cobranca(nome), status_fiscalizacao(nome)",
-        )
-        .limit(1000);
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as unknown as Row[];
+      if (res.error) throw new Error(res.error.message);
       return {
-        total: rows.length,
-        emDia: rows.filter(projetoEmDia).length,
-        emAtraso: rows.filter(projetoEmAtraso).length,
-        pendentes: rows.filter(projetoComPendencia).length,
+        rows: (res.data ?? []) as unknown as Row[],
+        total: res.count ?? 0,
+        prazoDisponivel,
       };
     },
   });
 
-  const canClear =
-    Boolean(busca) || [empresa, localidade, cobranca, fiscalizacao].some((v) => v !== ALL);
+  const kpis = useQuery({
+    queryKey: ["projetos", "kpis"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const total = await supabase.from("projetos").select("id", { count: "exact", head: true });
+      if (total.error) throw new Error(total.error.message);
+
+      const prazos = await supabase.from("projetos").select(sel(PRAZO_COL)).limit(5000);
+      if (prazos.error) {
+        if (isPrazoMissing(prazos.error.message)) {
+          return { total: total.count ?? 0, prazoDisponivel: false, amanha: 0, dois5: 0, vencidos: 0, mais5: 0 };
+        }
+        throw new Error(prazos.error.message);
+      }
+
+      const dias = ((prazos.data ?? []) as unknown as { dias_para_vencimento: number | null }[])
+        .map((r) => r.dias_para_vencimento)
+        .filter((d): d is number => d != null);
+
+      return {
+        total: total.count ?? 0,
+        prazoDisponivel: true,
+        amanha: dias.filter((d) => d === 1).length,
+        dois5: dias.filter((d) => d >= 2 && d <= 5).length,
+        vencidos: dias.filter((d) => d < 0).length,
+        mais5: dias.filter((d) => d > 5).length,
+      };
+    },
+  });
+
+  const canClear = Boolean(busca) || [empresa, localidade, cobranca].some((v) => v !== ALL);
 
   const empresaOptions = useMemo(
     () => (empresas.data ?? []).map((e) => ({ value: e.id, label: empresaLabel(e) })),
@@ -154,12 +185,13 @@ function ProjetosPage() {
   }
 
   const rows = lista.data?.rows ?? [];
+  const prazoIndisponivel = lista.data?.prazoDisponivel === false || kpis.data?.prazoDisponivel === false;
 
   return (
     <>
       <PageHeader
         title="Projetos"
-        description="Gerencie os projetos cadastrados, acompanhando cobrança e fiscalização."
+        description="Acompanhe o prazo de atualização no SIGUM e a cobrança de cada projeto."
         actions={
           can("projetos.criar") ? (
             <Button asChild size="sm">
@@ -172,40 +204,55 @@ function ProjetosPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           compact
           label="Total de projetos"
-          value={formatNumber(resumo.data?.total ?? 0)}
+          value={formatNumber(kpis.data?.total ?? 0)}
           icon={FileText}
           tone="primary"
-          loading={resumo.isLoading}
+          loading={kpis.isLoading}
         />
         <StatCard
           compact
-          label="Em dia"
-          value={formatNumber(resumo.data?.emDia ?? 0)}
-          icon={CheckCircle2}
-          tone="success"
-          loading={resumo.isLoading}
-        />
-        <StatCard
-          compact
-          label="Em atraso"
-          value={formatNumber(resumo.data?.emAtraso ?? 0)}
-          icon={Clock}
+          label="Vence amanhã"
+          value={formatNumber(kpis.data?.amanha ?? 0)}
+          icon={CalendarClock}
           tone="warning"
-          loading={resumo.isLoading}
+          loading={kpis.isLoading}
         />
         <StatCard
           compact
-          label="Pendentes de fiscalização"
-          value={formatNumber(resumo.data?.pendentes ?? 0)}
+          label="2 a 5 dias"
+          value={formatNumber(kpis.data?.dois5 ?? 0)}
+          icon={Timer}
+          tone="primary"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          compact
+          label="Vencidos"
+          value={formatNumber(kpis.data?.vencidos ?? 0)}
           icon={AlertTriangle}
           tone="danger"
-          loading={resumo.isLoading}
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          compact
+          label="+5 dias"
+          value={formatNumber(kpis.data?.mais5 ?? 0)}
+          icon={TrendingUp}
+          tone="neutral"
+          loading={kpis.isLoading}
         />
       </div>
+
+      {prazoIndisponivel ? (
+        <p className="rounded-lg border border-border bg-card px-3.5 py-2.5 text-xs text-muted-foreground shadow-card">
+          O prazo de atualização no SIGUM ainda não é retornado pelo banco de dados, por isso os
+          indicadores de prazo aparecem zerados.
+        </p>
+      ) : null}
 
       <FilterBar
         canClear={canClear}
@@ -214,7 +261,6 @@ function ProjetosPage() {
           setEmpresa(ALL);
           setLocalidade(ALL);
           setCobranca(ALL);
-          setFiscalizacao(ALL);
           setPage(0);
           void navigate({ to: "/projetos", search: {} });
         }}
@@ -222,7 +268,7 @@ function ProjetosPage() {
         <SearchField
           value={busca}
           onChange={setBusca}
-          placeholder="Buscar por projeto, contrato SIGUM, solicitante, chamado..."
+          placeholder="Buscar por projeto, contrato SIGUM, chamado..."
         />
         <FilterSelect
           label="Empresa"
@@ -252,15 +298,6 @@ function ProjetosPage() {
           }}
           options={(statusCobranca.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
         />
-        <FilterSelect
-          label="Status fiscalização"
-          value={fiscalizacao}
-          onChange={(v) => {
-            setFiscalizacao(v);
-            setPage(0);
-          }}
-          options={(statusFiscalizacao.data ?? []).map((s) => ({ value: s.id, label: s.nome }))}
-        />
       </FilterBar>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
@@ -281,10 +318,10 @@ function ProjetosPage() {
                     <Th align="right" sortKey="quantidade_postes" sort={sort} onSort={toggleSort}>
                       Postes
                     </Th>
+                    <Th>Prazo SIGUM</Th>
                     <Th>Status cobrança</Th>
-                    <Th>Status fiscalização</Th>
-                    <Th sortKey="data_abertura" sort={sort} onSort={toggleSort}>
-                      Abertura
+                    <Th sortKey="data_inicio_cobranca" sort={sort} onSort={toggleSort}>
+                      Início cobrança
                     </Th>
                   </tr>
                 </thead>
@@ -292,26 +329,42 @@ function ProjetosPage() {
                   <TableSkeleton cols={8} />
                 ) : (
                   <tbody>
-                    {rows.map((p) => (
-                      <Tr key={p.id} onClick={() => void navigate({ to: "/projetos/$id", params: { id: p.id } })}>
-                        <Td className="font-medium whitespace-nowrap">{p.numero_projeto}</Td>
-                        <Td className="max-w-[220px] truncate">{p.empresas?.nome_comercial ?? "—"}</Td>
-                        <Td className="whitespace-nowrap">
-                          {p.localidades ? localidadeLabel(p.localidades) : "—"}
-                        </Td>
-                        <Td className="max-w-[140px] truncate">{p.usuarios?.nome ?? "—"}</Td>
-                        <Td align="right" className="tabular">
-                          {formatNumber(p.quantidade_postes)}
-                        </Td>
-                        <Td>
-                          <StatusBadge label={p.status_cobranca?.nome} />
-                        </Td>
-                        <Td>
-                          <StatusBadge label={p.status_fiscalizacao?.nome} />
-                        </Td>
-                        <Td className="tabular whitespace-nowrap">{formatDate(p.data_abertura)}</Td>
-                      </Tr>
-                    ))}
+                    {rows.map((p) => {
+                      const prazo = prazoInfo(p.dias_para_vencimento, p.status_cobranca?.nome);
+                      return (
+                        <Tr
+                          key={p.id}
+                          onClick={() => void navigate({ to: "/projetos/$id", params: { id: p.id } })}
+                        >
+                          <Td className="font-medium whitespace-nowrap">{p.numero_projeto}</Td>
+                          <Td className="max-w-[220px] truncate">{p.empresas?.nome_comercial ?? "—"}</Td>
+                          <Td className="whitespace-nowrap">
+                            {p.localidades ? localidadeLabel(p.localidades) : "—"}
+                          </Td>
+                          <Td className="max-w-[140px] truncate">{p.usuarios?.nome ?? "—"}</Td>
+                          <Td align="right" className="tabular">
+                            {formatNumber(p.quantidade_postes)}
+                          </Td>
+                          <Td>
+                            {prazo ? (
+                              <StatusBadge
+                                label={prazo.label}
+                                tone={prazo.tone}
+                                className={prazo.strong ? "font-semibold" : undefined}
+                              />
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </Td>
+                          <Td>
+                            <StatusBadge label={p.status_cobranca?.nome ?? null} />
+                          </Td>
+                          <Td className="tabular whitespace-nowrap">
+                            {formatDate(p.data_inicio_cobranca)}
+                          </Td>
+                        </Tr>
+                      );
+                    })}
                   </tbody>
                 )}
               </table>
