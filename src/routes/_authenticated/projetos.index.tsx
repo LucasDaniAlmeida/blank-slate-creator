@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, CalendarClock, FileText, Timer, TrendingUp } from "lucide-react";
+import { AlertTriangle, CalendarClock, FileText, Plus, Timer, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/common/DataStates";
 import { ALL, FilterBar, FilterSelect, SearchField } from "@/components/common/Filters";
 import { PageHeader } from "@/components/common/PageHeader";
-import { Pagination, TableShell, Td, Th, Tr } from "@/components/common/DataTable";
+import { Pagination, Td, Th, Tr } from "@/components/common/DataTable";
+
 import { StatCard } from "@/components/common/StatCard";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
