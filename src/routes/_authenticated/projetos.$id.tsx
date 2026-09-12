@@ -128,7 +128,6 @@ function ProjetoDetalhe() {
                 {[p.localidades?.polo, p.localidades?.regional].filter(Boolean).join(" · ") || "—"}
               </DetailItem>
               <DetailItem label="Contrato SIGUM">{p.numero_contrato_sigum ?? "—"}</DetailItem>
-              <DetailItem label="Solicitante">{p.solicitante ?? "—"}</DetailItem>
               <DetailItem label="Analista">{p.usuarios?.nome ?? "—"}</DetailItem>
               <DetailItem label="Data de abertura">{formatDate(p.data_abertura)}</DetailItem>
               <DetailItem label="Data de resposta">{formatDate(p.data_resposta)}</DetailItem>
@@ -138,30 +137,42 @@ function ProjetoDetalhe() {
 
           <section className="rounded-lg border border-border bg-card shadow-card">
             <header className="border-b border-border px-4 py-3">
-              <h2 className="text-sm font-semibold">Cobrança e fiscalização</h2>
+              <h2 className="text-sm font-semibold">Cobrança e atualização no SIGUM</h2>
             </header>
             <DetailGrid>
               <DetailItem label="Status da cobrança">
-                <StatusBadge label={p.status_cobranca?.nome} />
+                <StatusBadge label={p.status_cobranca?.nome ?? null} />
               </DetailItem>
               <DetailItem label="Início da cobrança">{formatDate(p.data_inicio_cobranca)}</DetailItem>
-              <DetailItem label="Número do chamado">{p.numero_chamado ?? "—"}</DetailItem>
-              <DetailItem label="Status da fiscalização">
-                <StatusBadge label={p.status_fiscalizacao?.nome} />
+              <DetailItem label="Prazo SIGUM">
+                {(() => {
+                  const prazo = prazoInfo(p.dias_para_vencimento, p.status_cobranca?.nome);
+                  return prazo ? (
+                    <StatusBadge
+                      label={prazo.label}
+                      tone={prazo.tone}
+                      className={prazo.strong ? "font-semibold" : undefined}
+                    />
+                  ) : (
+                    "—"
+                  );
+                })()}
               </DetailItem>
-              <DetailItem label="Data da fiscalização">{formatDate(p.data_fiscalizacao)}</DetailItem>
+              <DetailItem label="Número do chamado">{p.numero_chamado ?? "—"}</DetailItem>
               <DetailItem label="Atualização SIGUM">{formatDate(p.data_atualizacao_sigum)}</DetailItem>
-              <DetailItem label="Projeto cadastrado">
-                <StatusBadge
-                  label={p.projeto_cadastrado ? "Sim" : "Não"}
-                  tone={p.projeto_cadastrado ? "success" : "neutral"}
-                />
+              <DetailItem label="Projeto cadastrado no sistema de origem">
+                {typeof p.projeto_cadastrado === "string"
+                  ? p.projeto_cadastrado || "—"
+                  : p.projeto_cadastrado
+                    ? "Sim"
+                    : "—"}
               </DetailItem>
               <DetailItem label="Observações">
                 <span className="whitespace-pre-wrap">{p.observacoes ?? "—"}</span>
               </DetailItem>
             </DetailGrid>
           </section>
+
         </>
       )}
 
