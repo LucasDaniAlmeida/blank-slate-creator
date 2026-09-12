@@ -35,7 +35,7 @@ import {
   situacaoTone,
 } from "@/lib/situacao";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Gestão de Projetos, Cobrança e Fiscalização" },
