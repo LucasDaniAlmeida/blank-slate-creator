@@ -42,6 +42,8 @@ export const Route = createFileRoute("/_authenticated/projetos/")({
         property: "og:description",
         content: "Prazos de atualização no SIGUM e status de cobrança dos projetos.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -351,7 +353,7 @@ function ProjetosPage() {
                               <StatusBadge
                                 label={prazo.label}
                                 tone={prazo.tone}
-                                className={prazo.strong ? "font-semibold" : undefined}
+                                {...(prazo.strong ? { className: "font-semibold" } : {})}
                               />
                             ) : (
                               <span className="text-muted-foreground">—</span>

@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/format";
+import { prazoInfo } from "@/lib/prazo";
 
 export const Route = createFileRoute("/_authenticated/projetos/$id")({
   head: () => ({
@@ -31,6 +32,8 @@ export const Route = createFileRoute("/_authenticated/projetos/$id")({
       { name: "description", content: "Informações completas do projeto, cobrança e fiscalização." },
       { property: "og:title", content: "Detalhe do projeto — Gestão de Projetos" },
       { property: "og:description", content: "Informações completas do projeto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -65,7 +68,7 @@ function ProjetoDetalhe() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["projetos"] });
       toast.success("Projeto excluído.");
-      await navigate({ to: "/projetos" });
+      await navigate({ to: "/projetos", search: {} });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -90,7 +93,7 @@ function ProjetoDetalhe() {
         actions={
           <>
             <Button asChild variant="outline" size="sm">
-              <Link to="/projetos">
+              <Link to="/projetos" search={{}}>
                 <ArrowLeft className="size-4" />
                 Voltar
               </Link>
@@ -151,7 +154,7 @@ function ProjetoDetalhe() {
                     <StatusBadge
                       label={prazo.label}
                       tone={prazo.tone}
-                      className={prazo.strong ? "font-semibold" : undefined}
+                      {...(prazo.strong ? { className: "font-semibold" } : {})}
                     />
                   ) : (
                     "—"

@@ -46,6 +46,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       },
       { property: "og:title", content: "Dashboard — Gestão de Projetos" },
       { property: "og:description", content: "Visão geral da operação de cobrança e fiscalização." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
