@@ -9,50 +9,339 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedLocalidadesRouteImport } from './routes/_authenticated/localidades'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as AuthenticatedEmpresasIndexRouteImport } from './routes/_authenticated/empresas.index'
+import { Route as AuthenticatedEmpresasIdRouteImport } from './routes/_authenticated/empresas.$id'
+import { Route as AuthenticatedEmpresasNovoRouteImport } from './routes/_authenticated/empresas.novo'
+import { Route as AuthenticatedNotificacoesIndexRouteImport } from './routes/_authenticated/notificacoes.index'
+import { Route as AuthenticatedNotificacoesIdRouteImport } from './routes/_authenticated/notificacoes.$id'
+import { Route as AuthenticatedNotificacoesNovoRouteImport } from './routes/_authenticated/notificacoes.novo'
+import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
+import { Route as AuthenticatedProjetosIdRouteImport } from './routes/_authenticated/projetos.$id'
+import { Route as AuthenticatedProjetosNovoRouteImport } from './routes/_authenticated/projetos.novo'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLocalidadesRoute =
+  AuthenticatedLocalidadesRouteImport.update({
+    id: '/localidades',
+    path: '/localidades',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmpresasIndexRoute =
+  AuthenticatedEmpresasIndexRouteImport.update({
+    id: '/empresas/',
+    path: '/empresas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmpresasIdRoute = AuthenticatedEmpresasIdRouteImport.update({
+  id: '/empresas/$id',
+  path: '/empresas/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmpresasNovoRoute =
+  AuthenticatedEmpresasNovoRouteImport.update({
+    id: '/empresas/novo',
+    path: '/empresas/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificacoesIndexRoute =
+  AuthenticatedNotificacoesIndexRouteImport.update({
+    id: '/notificacoes/',
+    path: '/notificacoes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificacoesIdRoute =
+  AuthenticatedNotificacoesIdRouteImport.update({
+    id: '/notificacoes/$id',
+    path: '/notificacoes/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificacoesNovoRoute =
+  AuthenticatedNotificacoesNovoRouteImport.update({
+    id: '/notificacoes/novo',
+    path: '/notificacoes/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjetosIndexRoute =
+  AuthenticatedProjetosIndexRouteImport.update({
+    id: '/projetos/',
+    path: '/projetos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProjetosIdRoute = AuthenticatedProjetosIdRouteImport.update({
+  id: '/projetos/$id',
+  path: '/projetos/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProjetosNovoRoute =
+  AuthenticatedProjetosNovoRouteImport.update({
+    id: '/projetos/novo',
+    path: '/projetos/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
+  '/localidades': typeof AuthenticatedLocalidadesRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/empresas/$id': typeof AuthenticatedEmpresasIdRoute
+  '/empresas/novo': typeof AuthenticatedEmpresasNovoRoute
+  '/notificacoes/$id': typeof AuthenticatedNotificacoesIdRoute
+  '/notificacoes/novo': typeof AuthenticatedNotificacoesNovoRoute
+  '/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/projetos/novo': typeof AuthenticatedProjetosNovoRoute
+  '/empresas/': typeof AuthenticatedEmpresasIndexRoute
+  '/notificacoes/': typeof AuthenticatedNotificacoesIndexRoute
+  '/projetos/': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/localidades': typeof AuthenticatedLocalidadesRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/empresas/$id': typeof AuthenticatedEmpresasIdRoute
+  '/empresas/novo': typeof AuthenticatedEmpresasNovoRoute
+  '/notificacoes/$id': typeof AuthenticatedNotificacoesIdRoute
+  '/notificacoes/novo': typeof AuthenticatedNotificacoesNovoRoute
+  '/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/projetos/novo': typeof AuthenticatedProjetosNovoRoute
+  '/empresas': typeof AuthenticatedEmpresasIndexRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesIndexRoute
+  '/projetos': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/localidades': typeof AuthenticatedLocalidadesRoute
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/empresas/$id': typeof AuthenticatedEmpresasIdRoute
+  '/_authenticated/empresas/novo': typeof AuthenticatedEmpresasNovoRoute
+  '/_authenticated/notificacoes/$id': typeof AuthenticatedNotificacoesIdRoute
+  '/_authenticated/notificacoes/novo': typeof AuthenticatedNotificacoesNovoRoute
+  '/_authenticated/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/_authenticated/projetos/novo': typeof AuthenticatedProjetosNovoRoute
+  '/_authenticated/empresas/': typeof AuthenticatedEmpresasIndexRoute
+  '/_authenticated/notificacoes/': typeof AuthenticatedNotificacoesIndexRoute
+  '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/localidades'
+    | '/usuarios'
+    | '/empresas/$id'
+    | '/empresas/novo'
+    | '/notificacoes/$id'
+    | '/notificacoes/novo'
+    | '/projetos/$id'
+    | '/projetos/novo'
+    | '/empresas/'
+    | '/notificacoes/'
+    | '/projetos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/login'
+    | '/localidades'
+    | '/usuarios'
+    | '/'
+    | '/empresas/$id'
+    | '/empresas/novo'
+    | '/notificacoes/$id'
+    | '/notificacoes/novo'
+    | '/projetos/$id'
+    | '/projetos/novo'
+    | '/empresas'
+    | '/notificacoes'
+    | '/projetos'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/localidades'
+    | '/_authenticated/usuarios'
+    | '/_authenticated/'
+    | '/_authenticated/empresas/$id'
+    | '/_authenticated/empresas/novo'
+    | '/_authenticated/notificacoes/$id'
+    | '/_authenticated/notificacoes/novo'
+    | '/_authenticated/projetos/$id'
+    | '/_authenticated/projetos/novo'
+    | '/_authenticated/empresas/'
+    | '/_authenticated/notificacoes/'
+    | '/_authenticated/projetos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/localidades': {
+      id: '/_authenticated/localidades'
+      path: '/localidades'
+      fullPath: '/localidades'
+      preLoaderRoute: typeof AuthenticatedLocalidadesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/empresas/': {
+      id: '/_authenticated/empresas/'
+      path: '/empresas'
+      fullPath: '/empresas/'
+      preLoaderRoute: typeof AuthenticatedEmpresasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/empresas/$id': {
+      id: '/_authenticated/empresas/$id'
+      path: '/empresas/$id'
+      fullPath: '/empresas/$id'
+      preLoaderRoute: typeof AuthenticatedEmpresasIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/empresas/novo': {
+      id: '/_authenticated/empresas/novo'
+      path: '/empresas/novo'
+      fullPath: '/empresas/novo'
+      preLoaderRoute: typeof AuthenticatedEmpresasNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notificacoes/': {
+      id: '/_authenticated/notificacoes/'
+      path: '/notificacoes'
+      fullPath: '/notificacoes/'
+      preLoaderRoute: typeof AuthenticatedNotificacoesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notificacoes/$id': {
+      id: '/_authenticated/notificacoes/$id'
+      path: '/notificacoes/$id'
+      fullPath: '/notificacoes/$id'
+      preLoaderRoute: typeof AuthenticatedNotificacoesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notificacoes/novo': {
+      id: '/_authenticated/notificacoes/novo'
+      path: '/notificacoes/novo'
+      fullPath: '/notificacoes/novo'
+      preLoaderRoute: typeof AuthenticatedNotificacoesNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projetos/': {
+      id: '/_authenticated/projetos/'
+      path: '/projetos'
+      fullPath: '/projetos/'
+      preLoaderRoute: typeof AuthenticatedProjetosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projetos/$id': {
+      id: '/_authenticated/projetos/$id'
+      path: '/projetos/$id'
+      fullPath: '/projetos/$id'
+      preLoaderRoute: typeof AuthenticatedProjetosIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projetos/novo': {
+      id: '/_authenticated/projetos/novo'
+      path: '/projetos/novo'
+      fullPath: '/projetos/novo'
+      preLoaderRoute: typeof AuthenticatedProjetosNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedLocalidadesRoute: typeof AuthenticatedLocalidadesRoute
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedEmpresasIdRoute: typeof AuthenticatedEmpresasIdRoute
+  AuthenticatedEmpresasNovoRoute: typeof AuthenticatedEmpresasNovoRoute
+  AuthenticatedNotificacoesIdRoute: typeof AuthenticatedNotificacoesIdRoute
+  AuthenticatedNotificacoesNovoRoute: typeof AuthenticatedNotificacoesNovoRoute
+  AuthenticatedProjetosIdRoute: typeof AuthenticatedProjetosIdRoute
+  AuthenticatedProjetosNovoRoute: typeof AuthenticatedProjetosNovoRoute
+  AuthenticatedEmpresasIndexRoute: typeof AuthenticatedEmpresasIndexRoute
+  AuthenticatedNotificacoesIndexRoute: typeof AuthenticatedNotificacoesIndexRoute
+  AuthenticatedProjetosIndexRoute: typeof AuthenticatedProjetosIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedLocalidadesRoute: AuthenticatedLocalidadesRoute,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedEmpresasIdRoute: AuthenticatedEmpresasIdRoute,
+  AuthenticatedEmpresasNovoRoute: AuthenticatedEmpresasNovoRoute,
+  AuthenticatedNotificacoesIdRoute: AuthenticatedNotificacoesIdRoute,
+  AuthenticatedNotificacoesNovoRoute: AuthenticatedNotificacoesNovoRoute,
+  AuthenticatedProjetosIdRoute: AuthenticatedProjetosIdRoute,
+  AuthenticatedProjetosNovoRoute: AuthenticatedProjetosNovoRoute,
+  AuthenticatedEmpresasIndexRoute: AuthenticatedEmpresasIndexRoute,
+  AuthenticatedNotificacoesIndexRoute: AuthenticatedNotificacoesIndexRoute,
+  AuthenticatedProjetosIndexRoute: AuthenticatedProjetosIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
