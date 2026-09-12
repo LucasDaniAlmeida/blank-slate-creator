@@ -381,7 +381,11 @@ function Dashboard() {
               <Panel
                 title="Últimos projetos"
                 action={
-                  <Link to="/projetos" className="text-xs font-medium text-primary hover:underline">
+                  <Link
+                    to="/projetos"
+                    search={{}}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
                     Ver todos
                   </Link>
                 }
