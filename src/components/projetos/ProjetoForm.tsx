@@ -323,7 +323,11 @@ export function ProjetoForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => (onCancel ? onCancel() : void navigate({ to: "/projetos", search: {} }))}
+          onClick={() =>
+            onCancel
+              ? onCancel()
+              : void navigate({ to: "/projetos", search: { busca: undefined } })
+          }
           disabled={mutation.isPending}
         >
           Cancelar
@@ -346,19 +350,19 @@ export function projetoToForm(row: Record<string, unknown>): ProjetoFormValues {
     return "";
   };
   return {
-    numero_projeto: text(row.numero_projeto),
-    empresa_id: text(row.empresa_id),
-    localidade_id: text(row.localidade_id),
-    numero_contrato_sigum: text(row.numero_contrato_sigum),
-    data_abertura: date(row.data_abertura),
-    data_resposta: date(row.data_resposta),
-    analista_id: text(row.analista_id),
-    quantidade_postes: String(row.quantidade_postes ?? 0),
-    data_inicio_cobranca: date(row.data_inicio_cobranca),
-    status_cobranca_id: text(row.status_cobranca_id),
-    numero_chamado: text(row.numero_chamado),
-    data_atualizacao_sigum: date(row.data_atualizacao_sigum),
-    observacoes: text(row.observacoes),
-    projeto_cadastrado: cadastrado(row.projeto_cadastrado),
+    numero_projeto: text(row["numero_projeto"]),
+    empresa_id: text(row["empresa_id"]),
+    localidade_id: text(row["localidade_id"]),
+    numero_contrato_sigum: text(row["numero_contrato_sigum"]),
+    data_abertura: date(row["data_abertura"]),
+    data_resposta: date(row["data_resposta"]),
+    analista_id: text(row["analista_id"]),
+    quantidade_postes: String(row["quantidade_postes"] ?? 0),
+    data_inicio_cobranca: date(row["data_inicio_cobranca"]),
+    status_cobranca_id: text(row["status_cobranca_id"]),
+    numero_chamado: text(row["numero_chamado"]),
+    data_atualizacao_sigum: date(row["data_atualizacao_sigum"]),
+    observacoes: text(row["observacoes"]),
+    projeto_cadastrado: cadastrado(row["projeto_cadastrado"]),
   };
 }
