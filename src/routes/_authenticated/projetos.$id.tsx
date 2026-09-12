@@ -68,7 +68,7 @@ function ProjetoDetalhe() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["projetos"] });
       toast.success("Projeto excluído.");
-      await navigate({ to: "/projetos", search: {} });
+      await navigate({ to: "/projetos", search: { busca: undefined } });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -93,7 +93,7 @@ function ProjetoDetalhe() {
         actions={
           <>
             <Button asChild variant="outline" size="sm">
-              <Link to="/projetos" search={{}}>
+              <Link to="/projetos" search={{ busca: undefined }}>
                 <ArrowLeft className="size-4" />
                 Voltar
               </Link>

@@ -39,7 +39,7 @@ function NovoProjeto() {
         description="Preencha as informações do projeto. Campos marcados são obrigatórios."
         actions={
           <Button asChild variant="outline" size="sm">
-            <Link to="/projetos" search={{}}>
+            <Link to="/projetos" search={{ busca: undefined }}>
               <ArrowLeft className="size-4" />
               Voltar
             </Link>
