@@ -1,4 +1,4 @@
 - [ ] Corrigir todos os erros de typecheck da prévia, inclusive os anteriores
 - [x] Ajustar os KPIs e campos de criação/edição de Projetos
-- [ ] Adicionar campos genéricos Regional e Polo ao cadastro de notificações
-- [ ] Adicionar campo genérico UC ao cadastro de projetos
+- [x] Adicionar campos genéricos Regional e Polo ao cadastro de notificações
+- [x] Adicionar campo genérico UC ao cadastro de projetos

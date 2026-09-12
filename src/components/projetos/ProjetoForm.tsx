@@ -95,6 +95,7 @@ export function ProjetoForm({
 }) {
   const [values, setValues] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uc, setUc] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -190,6 +191,11 @@ export function ProjetoForm({
             className="h-9"
           />
         </Field>
+        {!projetoId ? (
+          <Field label="UC">
+            <Input value={uc} onChange={(e) => setUc(e.target.value)} className="h-9" />
+          </Field>
+        ) : null}
         {projetoId ? (
           <Field label="Solicitante">
             <Input

@@ -86,6 +86,8 @@ export function NotificacaoForm({
 }) {
   const [values, setValues] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [regional, setRegional] = useState("");
+  const [polo, setPolo] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -173,6 +175,16 @@ export function NotificacaoForm({
             placeholder={empresas.isLoading ? "Carregando..." : "Selecione a empresa"}
           />
         </Field>
+        {!notificacaoId ? (
+          <>
+            <Field label="Regional">
+              <Input value={regional} onChange={(e) => setRegional(e.target.value)} className="h-9" />
+            </Field>
+            <Field label="Polo">
+              <Input value={polo} onChange={(e) => setPolo(e.target.value)} className="h-9" />
+            </Field>
+          </>
+        ) : null}
       </FormCard>
 
       <FormCard title="Processo" description="Datas e protocolos do processo de notificação.">
