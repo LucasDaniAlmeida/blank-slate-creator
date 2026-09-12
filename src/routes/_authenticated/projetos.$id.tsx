@@ -89,7 +89,7 @@ function ProjetoDetalhe() {
     <>
       <PageHeader
         title={`Projeto ${String(p["numero_projeto"] ?? "")}`}
-        description={`Cadastrado em ${formatDateTime(p["created_at"])} · última atualização ${formatDateTime(p["updated_at"])}`}
+        description={`Cadastrado em ${formatDateTime(p["created_at"] as string | null)} · última atualização ${formatDateTime(p["updated_at"] as string | null)}`}
         actions={
           <>
             <Button asChild variant="outline" size="sm">
