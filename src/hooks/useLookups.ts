@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 async function unwrap<T>(promise: PromiseLike<{ data: T | null; error: { message: string } | null }>) {
   const { data, error } = await promise;

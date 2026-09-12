@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/projetos/$id")({

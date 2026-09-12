@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { usePerfisAcesso } from "@/hooks/useLookups";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ROLE_LABEL, isRole } from "@/lib/permissions";
 

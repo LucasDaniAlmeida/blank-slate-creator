@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { NotificacaoForm, notificacaoToForm } from "@/components/notificacoes/NotificacaoForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/format";
 import { situacaoNotificacao, situacaoTone } from "@/lib/situacao";
 

@@ -8,7 +8,7 @@ import { Field, FormCard } from "@/components/common/FormKit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { maskCNPJ, maskPhone, onlyDigits } from "@/lib/format";
 
 export type Contato = { nome: string; telefone: string; email: string; cargo?: string };

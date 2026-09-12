@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { empresaLabel, useEmpresasOptions } from "@/hooks/useLookups";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { situacaoNotificacao, situacaoTone } from "@/lib/situacao";
 

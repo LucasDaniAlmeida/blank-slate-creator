@@ -25,7 +25,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { TableShell, Td, Th, Tr } from "@/components/common/DataTable";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatDate, formatNumber, percent } from "@/lib/format";
 import {
   projetoComPendencia,

@@ -19,7 +19,7 @@ import {
   useStatusCobranca,
   useStatusFiscalizacao,
 } from "@/hooks/useLookups";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatDate, formatNumber } from "@/lib/format";
 
 const PAGE_SIZE = 15;

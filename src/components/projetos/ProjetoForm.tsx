@@ -18,7 +18,7 @@ import {
   useStatusFiscalizacao,
   useUsuariosOptions,
 } from "@/hooks/useLookups";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export type ProjetoFormValues = {
   numero_projeto: string;

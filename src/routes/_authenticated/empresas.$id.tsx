@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { EmpresaForm, empresaToForm, type Contato } from "@/components/empresas/EmpresaForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatCNPJ, formatDate, formatDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/empresas/$id")({
