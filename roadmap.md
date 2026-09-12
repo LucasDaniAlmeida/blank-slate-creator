@@ -1,0 +1,1 @@
+- [ ] Corrigir todos os erros de typecheck da prévia
